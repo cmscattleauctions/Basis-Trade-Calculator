@@ -7,209 +7,133 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="hero">
+  <div class="container">
+    <header class="hero card">
       <div>
-        <p class="eyebrow">Browser-Based Financial Model</p>
+        <p class="eyebrow">Repo-driven calculator</p>
         <h1>PP Cattle P/L Model</h1>
-        <p class="subtitle">
-          Projects steer, heifer, and mixed economics from a Tuls 325# steer buy price using PP premium assumptions,
-          TCFA seasonal shift, and a shadow live-finish check.
-        </p>
+        <p class="subtitle">Built around one shared basis CSV file in the repo. Update the CSV, redeploy, and every user sees the same basis table.</p>
       </div>
-      <div class="hero-note card subtle-card">
-        <h2>Model logic</h2>
-        <ul>
-          <li>Primary output: feeder-driven outgoing value</li>
-          <li>Secondary output: live-finish template check</li>
-          <li>Base basis: average PP basis shifted by TCFA seasonality</li>
-          <li>All assumptions editable in settings</li>
-        </ul>
+      <div class="status-box">
+        <div class="status-row"><span>Basis source</span><strong id="basisSource">Loading…</strong></div>
+        <div class="status-row"><span>CSV path</span><code>data/pp_basis_monthly.csv</code></div>
+        <div class="status-row"><span>Model logic</span><strong>PP base average + seasonal shift</strong></div>
       </div>
     </header>
 
-    <main class="layout-grid">
-      <section class="panel card inputs-panel">
-        <div class="panel-header">
+    <main class="main-grid">
+      <section class="card section">
+        <div class="section-head">
           <h2>Inputs</h2>
-          <button id="resetBtn" class="ghost-btn" type="button">Reset defaults</button>
+          <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
         </div>
 
-        <div class="section-block">
-          <h3>Purchase side</h3>
-          <div class="grid two-col">
-            <label>
-              <span>Tuls 325# steer price ($/cwt)</span>
-              <input id="buyPrice" type="number" step="0.01" value="360" />
-            </label>
-            <label>
-              <span>Delivery date</span>
-              <input id="deliveryDate" type="date" />
-            </label>
-            <label>
-              <span>Total head</span>
-              <input id="totalHead" type="number" step="1" value="100" />
-            </label>
-            <label>
-              <span>Ownership (%)</span>
-              <input id="ownershipPct" type="number" step="0.01" value="100" />
-            </label>
-          </div>
+        <div class="form-grid two-col">
+          <label>
+            <span>Tuls 325# steer cash price ($/cwt)</span>
+            <input id="buyPrice" type="number" step="0.01" value="360" />
+          </label>
+          <label>
+            <span>Delivery date</span>
+            <input id="deliveryDate" type="date" />
+          </label>
+          <label>
+            <span>Incoming 325# feeder board close ($/cwt)</span>
+            <input id="incomingBoard" type="number" step="0.01" value="295" />
+          </label>
+          <label>
+            <span>Outgoing feeder board estimate ($/cwt)</span>
+            <input id="outgoingBoard" type="number" step="0.01" value="305" />
+          </label>
+          <label>
+            <span>Total head</span>
+            <input id="totalHead" type="number" step="1" value="100" />
+          </label>
+          <label>
+            <span>Ownership (%)</span>
+            <input id="ownershipPct" type="number" step="0.01" value="100" />
+          </label>
         </div>
 
-        <div class="section-block">
-          <h3>Board values</h3>
-          <div class="grid two-col">
-            <label>
-              <span>Feeder futures estimate ($/cwt)</span>
-              <input id="feederFutures" type="number" step="0.01" value="295" />
-            </label>
-            <label>
-              <span>Live futures estimate ($/cwt)</span>
-              <input id="liveFutures" type="number" step="0.01" value="205" />
-            </label>
-            <label>
-              <span>Custom outgoing feeder sale price ($/cwt)</span>
-              <input id="customSalePrice" type="number" step="0.01" value="325" />
-            </label>
-            <label>
-              <span>Custom outgoing live sale price ($/cwt)</span>
-              <input id="customLiveSalePrice" type="number" step="0.01" value="215" />
-            </label>
-          </div>
+        <div class="section-subhead">
+          <h3>Basis scenarios</h3>
+          <p>Base uses the overall PP average from the CSV, then applies the monthly seasonal shift based on the projected out month.</p>
         </div>
 
-        <div class="section-block">
-          <h3>Basis engine</h3>
-          <div class="grid two-col">
-            <label>
-              <span>Basis mode</span>
-              <select id="basisMode">
-                <option value="seasonalShift" selected>PP average + TCFA seasonal shift</option>
-                <option value="monthlyPP">Direct PP monthly basis average</option>
-                <option value="blended">Blended monthly PP / seasonal-shift basis</option>
-              </select>
-            </label>
-            <label>
-              <span>Blend: PP monthly weight (%)</span>
-              <input id="blendWeight" type="range" min="0" max="100" step="1" value="60" />
-              <strong id="blendWeightValue">60%</strong>
-            </label>
-          </div>
-          <p class="help-text">
-            Base scenario uses the overall PP average, then applies the TCFA seasonal month shift to the projected out month.
-            The blended option mixes that with the direct PP month average.
-          </p>
+        <div class="form-grid two-col">
+          <label>
+            <span>Risk floor adjustment ($/cwt)</span>
+            <input id="riskFloorAdj" type="number" step="0.01" value="-15" />
+          </label>
+          <label>
+            <span>Conservative adjustment ($/cwt)</span>
+            <input id="conservativeAdj" type="number" step="0.01" value="-8" />
+          </label>
+          <label>
+            <span>Bullish adjustment ($/cwt)</span>
+            <input id="bullishAdj" type="number" step="0.01" value="8" />
+          </label>
         </div>
 
-        <div class="section-block collapsible-block">
-          <button class="collapse-toggle" id="advancedToggle" type="button" aria-expanded="false">Advanced settings</button>
-          <div id="advancedPanel" class="collapsed-content">
-            <div class="grid three-col">
-              <label>
-                <span>Interest rate (%)</span>
-                <input id="interestRate" type="number" step="0.01" value="7.25" />
-              </label>
-              <label>
-                <span>Death loss (%)</span>
-                <input id="deathLoss" type="number" step="0.01" value="1.00" />
-              </label>
-              <label>
-                <span>Commission on PP sale (%)</span>
-                <input id="commissionPct" type="number" step="0.01" value="2.00" />
-              </label>
-              <label>
-                <span>Equity base (%)</span>
-                <input id="equityBase" type="number" step="0.01" value="30.00" />
-              </label>
-              <label>
-                <span>Scenario risk-floor adjustment (basis $/cwt)</span>
-                <input id="riskFloorAdj" type="number" step="0.01" value="-15" />
-              </label>
-              <label>
-                <span>Scenario conservative adjustment (basis $/cwt)</span>
-                <input id="conservativeAdj" type="number" step="0.01" value="-8" />
-              </label>
-              <label>
-                <span>Scenario bullish adjustment (basis $/cwt)</span>
-                <input id="bullishAdj" type="number" step="0.01" value="8" />
-              </label>
-            </div>
-
-            <div class="settings-grid">
-              <article class="mini-card">
-                <h4>Steer assumptions</h4>
-                <div class="grid two-col mini-grid">
-                  <label><span>In wt</span><input id="steerInWt" type="number" step="1" value="325" /></label>
-                  <label><span>Out wt</span><input id="steerOutWt" type="number" step="1" value="675" /></label>
-                  <label><span>COG ($/lb gain)</span><input id="steerCog" type="number" step="0.01" value="0.80" /></label>
-                  <label><span>ADG</span><input id="steerAdg" type="number" step="0.01" value="2.80" /></label>
-                </div>
-              </article>
-              <article class="mini-card">
-                <h4>Heifer assumptions</h4>
-                <div class="grid two-col mini-grid">
-                  <label><span>In wt</span><input id="heiferInWt" type="number" step="1" value="325" /></label>
-                  <label><span>Out wt</span><input id="heiferOutWt" type="number" step="1" value="650" /></label>
-                  <label><span>COG ($/lb gain)</span><input id="heiferCog" type="number" step="0.01" value="0.85" /></label>
-                  <label><span>ADG</span><input id="heiferAdg" type="number" step="0.01" value="2.78" /></label>
-                </div>
-              </article>
-            </div>
+        <button id="advancedToggle" class="ghost-btn full-width" type="button" aria-expanded="false">Show advanced settings</button>
+        <div id="advancedPanel" class="advanced hidden">
+          <div class="form-grid three-col">
+            <label><span>Interest rate (%)</span><input id="interestRate" type="number" step="0.01" value="7.25" /></label>
+            <label><span>Death loss (%)</span><input id="deathLoss" type="number" step="0.01" value="1.00" /></label>
+            <label><span>Commission on sale (%)</span><input id="commissionPct" type="number" step="0.01" value="2.00" /></label>
+            <label><span>Equity base (%)</span><input id="equityBase" type="number" step="0.01" value="30.00" /></label>
+            <label><span>Steer out wt</span><input id="steerOutWt" type="number" step="1" value="675" /></label>
+            <label><span>Heifer out wt</span><input id="heiferOutWt" type="number" step="1" value="650" /></label>
+            <label><span>Steer COG ($/lb gain)</span><input id="steerCog" type="number" step="0.01" value="0.80" /></label>
+            <label><span>Heifer COG ($/lb gain)</span><input id="heiferCog" type="number" step="0.01" value="0.85" /></label>
+            <label><span>Steer ADG</span><input id="steerAdg" type="number" step="0.01" value="2.80" /></label>
+            <label><span>Heifer ADG</span><input id="heiferAdg" type="number" step="0.01" value="2.78" /></label>
           </div>
         </div>
       </section>
 
-      <section class="panel card outputs-panel">
-        <div class="panel-header">
-          <h2>Summary</h2>
-          <div class="summary-pill" id="basisSummary"></div>
+      <section class="card section">
+        <div class="section-head">
+          <h2>Quick view</h2>
         </div>
-        <div class="summary-grid" id="summaryGrid"></div>
-        <div class="chart-card subtle-card">
-          <div class="chart-header">
-            <h3>Basis sensitivity ($/head)</h3>
-            <p>Impact of changing outgoing basis while holding the board flat.</p>
-          </div>
-          <div id="sensitivityGrid" class="sensitivity-grid"></div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="mini-panel">
+          <h3>Month logic</h3>
+          <div id="monthLogic"></div>
+        </div>
+        <div class="mini-panel">
+          <h3>Basis details</h3>
+          <div id="basisDiagnostics"></div>
         </div>
       </section>
     </main>
 
-    <section class="card scenario-panel">
-      <div class="panel-header">
+    <section class="card section">
+      <div class="section-head">
         <h2>Scenario outputs</h2>
-        <div class="legend">
-          <span class="legend-item"><i class="dot base"></i> Feeder-driven official output</span>
-          <span class="legend-item"><i class="dot live"></i> Live-finish shadow check</span>
-        </div>
       </div>
-      <div class="tab-row">
-        <button class="tab-btn active" data-tab="steers" type="button">Steers</button>
-        <button class="tab-btn" data-tab="heifers" type="button">Heifers</button>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="steer" type="button">Steer</button>
+        <button class="tab-btn" data-tab="heifer" type="button">Heifer</button>
         <button class="tab-btn" data-tab="mixed" type="button">Mixed 50/50</button>
       </div>
       <div id="scenarioTables"></div>
     </section>
 
-    <section class="card diagnostics-panel">
-      <div class="panel-header">
-        <h2>Basis diagnostics</h2>
+    <section class="card section">
+      <div class="section-head">
+        <h2>Basis sensitivity</h2>
       </div>
-      <div class="diagnostics-grid">
-        <article class="diagnostic-card">
-          <h3>Projected month logic</h3>
-          <div id="monthLogic"></div>
-        </article>
-        <article class="diagnostic-card">
-          <h3>Premium picture</h3>
-          <div id="premiumDiagnostics"></div>
-        </article>
-        <article class="diagnostic-card wide">
-          <h3>Embedded historical data</h3>
-          <div id="historicalTable"></div>
-        </article>
+      <div id="sensitivityTable"></div>
+    </section>
+
+    <section class="card section">
+      <div class="section-head">
+        <h2>Loaded PP monthly basis data</h2>
+        <a class="ghost-btn inline-link" href="data/pp_basis_monthly.csv" download>Download current CSV</a>
       </div>
+      <p class="help">To update basis data for all users, replace <code>data/pp_basis_monthly.csv</code> in the repo with a new file using the same columns: <strong>Month, Steers, Heifers</strong>.</p>
+      <div id="basisTable"></div>
     </section>
   </div>
 
