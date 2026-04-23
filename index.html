@@ -12,12 +12,12 @@
       <div>
         <p class="eyebrow">Repo-driven calculator</p>
         <h1>PP Cattle P/L Model</h1>
-        <p class="subtitle">Built around one shared basis CSV file in the repo. Update the CSV, redeploy, and every user sees the same basis table.</p>
+        <p class="subtitle">Loads shared PP basis data from one repo CSV file. Update the CSV in the repo and every user sees the same numbers.</p>
       </div>
       <div class="status-box">
         <div class="status-row"><span>Basis source</span><strong id="basisSource">Loading…</strong></div>
         <div class="status-row"><span>CSV path</span><code>data/pp_basis_monthly.csv</code></div>
-        <div class="status-row"><span>Model logic</span><strong>PP base average + seasonal shift</strong></div>
+        <div class="status-row"><span>Model logic</span><strong id="modelLogicLabel">PP overall avg + TCFA seasonal shift</strong></div>
       </div>
     </header>
 
@@ -47,7 +47,7 @@
           </label>
           <label>
             <span>Total head</span>
-            <input id="totalHead" type="number" step="1" value="100" />
+            <input id="totalHead" type="number" step="1" value="145" />
           </label>
           <label>
             <span>Ownership (%)</span>
@@ -56,11 +56,18 @@
         </div>
 
         <div class="section-subhead">
-          <h3>Basis scenarios</h3>
-          <p>Base uses the overall PP average from the CSV, then applies the monthly seasonal shift based on the projected out month.</p>
+          <h3>Basis model</h3>
+          <p>Choose whether the calculator uses your raw monthly PP basis values for the out month, or your overall PP average adjusted by the TCFA seasonal month-to-month shift.</p>
         </div>
 
         <div class="form-grid two-col">
+          <label>
+            <span>Basis mode</span>
+            <select id="basisMode">
+              <option value="raw">Raw PP monthly data</option>
+              <option value="seasonal" selected>PP overall avg + TCFA seasonal shift</option>
+            </select>
+          </label>
           <label>
             <span>Risk floor adjustment ($/cwt)</span>
             <input id="riskFloorAdj" type="number" step="0.01" value="-15" />
@@ -72,6 +79,13 @@
           <label>
             <span>Bullish adjustment ($/cwt)</span>
             <input id="bullishAdj" type="number" step="0.01" value="8" />
+          </label>
+          <label>
+            <span>Deduct sale commission in P/L</span>
+            <select id="applyCommission">
+              <option value="0" selected>No — match paper breakevens</option>
+              <option value="1">Yes — deduct 2% from sale value</option>
+            </select>
           </label>
         </div>
 
@@ -129,11 +143,20 @@
 
     <section class="card section">
       <div class="section-head">
-        <h2>Loaded PP monthly basis data</h2>
-        <a class="ghost-btn inline-link" href="data/pp_basis_monthly.csv" download>Download current CSV</a>
+        <h2>Basis source tables</h2>
+        <a class="ghost-btn inline-link" href="data/pp_basis_monthly.csv" download>Download current PP CSV</a>
       </div>
-      <p class="help">To update basis data for all users, replace <code>data/pp_basis_monthly.csv</code> in the repo with a new file using the same columns: <strong>Month, Steers, Heifers</strong>.</p>
-      <div id="basisTable"></div>
+      <p class="help">Your PP monthly basis data and the TCFA 5-year monthly values are shown below so you can see exactly what the calculator is using in each mode.</p>
+      <div class="dual-table-grid">
+        <div>
+          <h3>Loaded PP monthly basis data</h3>
+          <div id="basisTable"></div>
+        </div>
+        <div>
+          <h3>TCFA 5-year seasonal reference</h3>
+          <div id="tcfaTable"></div>
+        </div>
+      </div>
     </section>
   </div>
 
